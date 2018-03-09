@@ -1,0 +1,29 @@
+{
+  "name": "addressbook",
+  "version": "1.0.0",
+  "description": "Simple Address Book",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ksinton/addressbook.git"
+  },
+  "keywords": [
+    "address",
+    "book"
+  ],
+  "author": "Kim Sinton",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/ksinton/addressbook/issues"
+  },
+  "homepage": "https://github.com/ksinton/addressbook#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "mysql": "^2.15.0"
+  }
+}
