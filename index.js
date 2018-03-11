@@ -1,35 +1,59 @@
 // index.js
 
 var express    = require('express');
-var mysql      = require('mysql');
 var app        = express();
 var bodyParser = require('body-parser');
-var mysql = require('mysql');
+var Promise    = require('promise');
 
-//create connection object for mysql
-var con = mysql.createConnection({
-  host: "localhost",
-  user: "yourusername",
-  password: "yourpassword"
-});
 
-//connection to mysql
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
+var AddressBook = require('./datalayer/AddressBook.js');
+
+addressBookObject = new AddressBook;
 
 // configure app with body parser
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// var port = process.env.PORT || 4000;
-
 var router = express.Router();
 
+router.post('/user', function(req, res) {
+
+    var name = req.body.name;
+    var username = req.body.username;
+    var password = req.body.password;
+
+
+    var addUserPromise = new Promise(function (resolve, reject) {
+
+      try {
+        response = addressBookObject.createUserAccount(name, username, password);
+      }
+      catch(error) {
+        console.error(error);
+        reject(error);
+      }
+
+      resolve();
+
+      });
+
+      addUserPromise.then(function() {
+        res.statusCode = 201;
+        res.json({ message: '1 record inserted 22' });
+      },function(error) {
+        res.statusCode = 500;
+        res.json({ message: 'An error occured:' + error });
+    });
+
+});
+
+
+
 router.get('/', function(req, res) {
+
     res.json({ message: 'hooray! welcome to our api!22' });
 });
+
 
 app.use('/', router);
 
