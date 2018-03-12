@@ -1,14 +1,18 @@
 // index.js
 
 var express    = require('express');
-var app        = express();
 var bodyParser = require('body-parser');
 var Promise    = require('promise');
-
+var jwt        = require('jsonwebtoken');
+var bcrypt     = require('bcryptjs');
 
 var AddressBook = require('./datalayer/AddressBook.js');
 
+var app  = express();
 addressBookObject = new AddressBook;
+
+//used for the JWT tokens
+var secret = 'hSNfIMjN6e66UWVIhxQI';
 
 // configure app with body parser
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -18,7 +22,7 @@ app.use(bodyParser.json());
 
 var router = express.Router();
 
-router.post('/user', function(req, res) {
+router.post('/user/register', function(req, res) {
 
     var name = req.body.name;
     var username = req.body.username;
@@ -49,19 +53,114 @@ router.post('/user', function(req, res) {
       res.json({ message: 'Unable to add user without valid password field.  User name must be no longer than 30 characters' });
     }
 
-    var responsePromise = addressBookObject.createUserAccount(name, username, password);
+    var hashedPassword = bcrypt.hashSync(req.body.password, 8);
+
+    var responsePromise = addressBookObject.createUserAccount(name, username, hashedPassword);
 
     responsePromise.then(function() {
       res.statusCode = 201;
-      res.json({ message: '1 record inserted 22' });
+
+      // create a token
+      var token = jwt.sign({ id: username }, secret, {});
+
+      res.json({ message: 'Account Added', token: token });
     },function(error) {
       res.statusCode = 500;
-      res.json({ message: 'Error whiles saving the user record' });
+      res.json({ message: 'Internal Server Error whiles saving the user record' });
     });
 
 });
 
+router.post('/user/login', function(req, res) {
 
+  var username = req.body.username;
+  var password = req.body.password;
+
+  var accountPasswordPromise = addressBookObject.getAccountPassword(username);
+
+  accountPasswordPromise.then(function(loginResponse) {
+
+    if (loginResponse) {
+      bcrypt.compare(password, loginResponse.password, function(error, response) {
+
+        if(response === true) {
+          res.statusCode = 200;
+
+          // create a token
+          var token = jwt.sign({ id: username }, secret, {});
+
+
+          console.log("loginResponse.userId",loginResponse.userId);
+
+          var userId = loginResponse.userId;
+
+          res.json({ 'message': 'Login Success', 'userId':userId, 'token': token });
+        } else {
+          res.statusCode = 401;
+          res.json({ message: 'Login Failed'});
+        }
+      });
+    }  else {
+      res.statusCode = 401;
+      res.json({ message: 'Login Failed'});
+    }
+
+
+  },function(error) {
+    res.statusCode = 500;
+    res.json({ message: 'Internal Server Error whiles trying to login' });
+  });
+
+});
+
+
+router.post('/contact', function(req, res) {
+
+    var token = req.headers['x-access-token'];
+
+
+    jwt.verify(token, secret, function(err, decoded) {
+
+        if (err) {
+          return res.status(500).send({ auth: false, message: 'Failed to authenticate token.'});
+        } else {
+
+          var firstName = req.body.firstName;
+          var lastName = req.body.lastName;
+          var phone = req.body.phone;
+          var userId = req.body.userId;
+
+          if (!firstName || (firstName.length < 1)) {
+            res.statusCode = 400;
+            res.json({ message: 'Unable to add user without firstName field' });
+          }
+
+          if (!lastName || (lastName.length < 1)) {
+            res.statusCode = 400;
+            res.json({ message: 'Unable to add user without lastName field' });
+          }
+
+          if (!phone || (phone.length < 1)) {
+            res.statusCode = 400;
+            res.json({ message: 'Unable to add user without phone field' });
+          }
+
+          var responsePromise = addressBookObject.createContact(firstName, lastName, phone, userId);
+
+          responsePromise.then(function() {
+            res.statusCode = 201;
+            res.json({ message: 'Contact Added'});
+          },
+          function(error) {
+            res.statusCode = 500;
+            res.json({ message: 'Internal Server Error whiles saving the contact record' });
+          });
+        }
+
+    });
+
+
+});
 
 
 router.get('/', function(req, res) {

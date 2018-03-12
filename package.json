@@ -22,8 +22,10 @@
   },
   "homepage": "https://github.com/ksinton/addressbook#readme",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
+    "jsonwebtoken": "^8.2.0",
     "mysql": "^2.15.0",
     "promise": "^8.0.1"
   }
