@@ -75,6 +75,29 @@ var AddressBook = function() {
     }
 
 
+    this.deleteContact = function(contactId) {
+
+      var sql = "DELETE FROM contact WHERE contactId = " + contactId;
+
+      var deleteContactPromise = new Promise(function (resolve, reject) {
+
+        Connection.query(sql, function (error, result) {
+          if (error) {
+            console.log(error);
+            reject(error)
+          } else {
+            console.log("result",result.affectedRows);
+            resolve(result.affectedRows);
+          }
+        });
+
+      });
+
+      return deleteContactPromise;
+
+    }
+
+
 }
 
 module.exports = AddressBook;

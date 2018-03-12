@@ -163,6 +163,46 @@ router.post('/contact', function(req, res) {
 });
 
 
+
+router.delete('/contact/:contactId', function(req, res) {
+
+    var token = req.headers['x-access-token'];
+
+
+    jwt.verify(token, secret, function(err, decoded) {
+
+        if (err) {
+          return res.status(500).send({ auth: false, message: 'Failed to authenticate token.'});
+        } else {
+
+          var contactId = req.params.contactId;
+          var responsePromise = addressBookObject.deleteContact(contactId);
+
+          responsePromise.then(function(rowsAffected) {
+
+            console.log("rowsAffected",rowsAffected);
+
+            if (rowsAffected > 0) {
+              res.statusCode = 202;
+              res.json({ message: 'Contact Deleted'});
+            } else {
+              res.statusCode = 400;
+              res.json({ message: 'Nothing Deleted.  Contact may not exist. '});
+            }
+          },
+          function(error) {
+            res.statusCode = 500;
+            res.json({ message: 'Internal Server Error whiles deleting the contact record' });
+          });
+        }
+
+    });
+
+
+});
+
+
+
 router.get('/', function(req, res) {
 
     res.json({ message: 'hooray! welcome to our api!22' });
