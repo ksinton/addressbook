@@ -116,8 +116,9 @@ router.post('/user/login', function(req, res) {
 
 router.post('/contact', function(req, res) {
 
-    var token = req.headers['x-access-token'];
+    console.log("jeeee");
 
+    var token = req.headers['x-access-token'];
 
     jwt.verify(token, secret, function(err, decoded) {
 
@@ -162,12 +163,9 @@ router.post('/contact', function(req, res) {
 
 });
 
-
-
 router.delete('/contact/:contactId', function(req, res) {
 
     var token = req.headers['x-access-token'];
-
 
     jwt.verify(token, secret, function(err, decoded) {
 
@@ -179,8 +177,6 @@ router.delete('/contact/:contactId', function(req, res) {
           var responsePromise = addressBookObject.deleteContact(contactId);
 
           responsePromise.then(function(rowsAffected) {
-
-            console.log("rowsAffected",rowsAffected);
 
             if (rowsAffected > 0) {
               res.statusCode = 202;
@@ -197,17 +193,48 @@ router.delete('/contact/:contactId', function(req, res) {
         }
 
     });
-
-
 });
 
+
+router.get('/contact/:contactId', function(req, res) {
+
+    var token = req.headers['x-access-token'];
+
+
+    jwt.verify(token, secret, function(err, decoded) {
+
+        if (err) {
+          return res.status(500).send({ auth: false, message: 'Failed to authenticate token.'});
+        } else {
+
+          var contactId = req.params.contactId;
+          var responsePromise = addressBookObject.getContact(contactId);
+
+          responsePromise.then(function(contactObject) {
+
+            if (contactObject) {
+              res.statusCode = 202;
+              res.json({ message: 'Contact Retrieved', data: contactObject});
+            } else {
+              res.statusCode = 400;
+              res.json({ message: 'Contact not found.'});
+            }
+          },
+          function(error) {
+            res.statusCode = 500;
+            res.json({ message: 'Internal Server Error whiles retrieving the contact record' });
+          });
+        }
+
+    });
+});
 
 
 router.get('/', function(req, res) {
 
-    res.json({ message: 'hooray! welcome to our api!22' });
+  res.statusCode = 200;
+  res.json({ message: 'Welcome to our Api'});
 });
-
 
 app.use('/', router);
 

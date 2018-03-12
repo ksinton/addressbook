@@ -98,6 +98,28 @@ var AddressBook = function() {
     }
 
 
+    this.getContact = function(contactId) {
+
+      var sql = "SELECT * FROM contact WHERE contactId = " + contactId;
+
+      var getContactPromise = new Promise(function (resolve, reject) {
+
+        Connection.query(sql, function (error, result) {
+          if (error) {
+            console.log(error);
+            reject(error)
+          } else {
+            resolve(result);
+          }
+        });
+
+      });
+
+      return getContactPromise;
+
+    }
+
+
 }
 
 module.exports = AddressBook;
