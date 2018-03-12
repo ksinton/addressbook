@@ -119,6 +119,27 @@ var AddressBook = function() {
 
     }
 
+    this.getAllContactsForUser = function(userId) {
+
+      var sql = "SELECT * FROM contact WHERE fk_userId = " + userId;
+
+      var getUserContactPromise = new Promise(function (resolve, reject) {
+
+        Connection.query(sql, function (error, result) {
+          if (error) {
+            console.log(error);
+            reject(error)
+          } else {
+            resolve(result);
+          }
+        });
+
+      });
+
+      return getUserContactPromise;
+
+    }
+
 
 }
 

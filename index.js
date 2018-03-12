@@ -200,7 +200,6 @@ router.get('/contact/:contactId', function(req, res) {
 
     var token = req.headers['x-access-token'];
 
-
     jwt.verify(token, secret, function(err, decoded) {
 
         if (err) {
@@ -228,6 +227,38 @@ router.get('/contact/:contactId', function(req, res) {
 
     });
 });
+
+
+router.get('/user/contacts/:userId', function(req, res) {
+
+    var token = req.headers['x-access-token'];
+
+    jwt.verify(token, secret, function(err, decoded) {
+
+      if (err) {
+        return res.status(500).send({ auth: false, message: 'Failed to authenticate token.'});
+      } else {
+
+        var userId = req.params.userId;
+        var responsePromise = addressBookObject.getAllContactsForUser(userId);
+
+        responsePromise.then(function(contactList) {
+
+          if (contactList) {
+            res.statusCode = 202;
+            res.json({ message: 'Contact Retrieved', data: contactList});
+          } else {
+            res.statusCode = 400;
+            res.json({ message: 'User not found.'});
+          }
+        },
+        function(error) {
+          res.statusCode = 500;
+          res.json({ message: 'Internal Server Error whiles retrieving the contact list' });
+        });
+      }
+    });
+  });
 
 
 router.get('/', function(req, res) {
